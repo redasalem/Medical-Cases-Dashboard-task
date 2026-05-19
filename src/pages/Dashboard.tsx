@@ -12,7 +12,6 @@ import {
   AlertCircle
 } from 'lucide-react';
 import apiClient from '../utils/apiClient';
-import axios from 'axios';
 
 /**
  * Medical Case Type Definition
@@ -35,16 +34,15 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
 
   // Fetch cases on mount
-  const fetchCases = async (signal?: AbortSignal) => {
+  const fetchCases = async () => {
     try {
       setIsLoading(true);
       setError(null);
       // GET /api/cases/ (proxied)
-      const response = await apiClient.get('/api/cases/', { signal });
+      const response = await apiClient.get('/api/cases/');
       setCases(response.data || []);
       setFilteredCases(response.data || []);
     } catch (err: any) {
-      if (axios.isCancel(err)) return;
       console.error('Failed to fetch cases:', err);
       setError('Failed to fetch cases. Please verify your connection.');
     } finally {
@@ -53,9 +51,7 @@ const Dashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    const controller = new AbortController();
-    fetchCases(controller.signal);
-    return () => controller.abort();
+    fetchCases();
   }, []);
 
   // Filter logic: Search + Difficulty Dropdown

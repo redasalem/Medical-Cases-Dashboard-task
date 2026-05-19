@@ -14,7 +14,6 @@ import {
   BadgeCheck
 } from 'lucide-react';
 import apiClient from '../utils/apiClient';
-import axios from 'axios';
 
 /**
  * Detailed Case Data Interface
@@ -38,16 +37,14 @@ const CaseDetails: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const controller = new AbortController();
     const fetchCaseDetails = async () => {
       try {
         setIsLoading(true);
         setError(null);
         // GET /api/cases/[id]/ (proxied)
-        const response = await apiClient.get(`/api/cases/${id}/`, { signal: controller.signal });
+        const response = await apiClient.get(`/api/cases/${id}/`);
         setCaseData(response.data);
       } catch (error: any) {
-        if (axios.isCancel(error)) return;
         console.error('Failed to fetch case details:', error);
         setError(error.message || 'Failed to load case details. Please try again.');
       } finally {
@@ -56,7 +53,6 @@ const CaseDetails: React.FC = () => {
     };
 
     if (id) fetchCaseDetails();
-    return () => controller.abort();
   }, [id]);
 
   if (isLoading) {
