@@ -12,6 +12,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import apiClient from '../utils/apiClient';
+import axios from 'axios';
 
 /**
  * Medical Case Type Definition
@@ -43,7 +44,7 @@ const Dashboard: React.FC = () => {
       setCases(response.data || []);
       setFilteredCases(response.data || []);
     } catch (err: any) {
-      if (err.name === 'CanceledError') return;
+      if (axios.isCancel(err)) return;
       console.error('Failed to fetch cases:', err);
       setError('Failed to fetch cases. Please verify your connection.');
     } finally {
