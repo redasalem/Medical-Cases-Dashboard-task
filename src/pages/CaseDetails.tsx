@@ -7,7 +7,6 @@ import {
   History, 
   Crosshair, 
   ClipboardList,
-  Loader2,
   Share2,
   Printer,
   Calendar,
@@ -38,14 +37,16 @@ const CaseDetails: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchCaseDetails = async () => {
       try {
         setIsLoading(true);
         setError(null);
         // GET /api/cases/[id]/ (proxied)
-        const response = await apiClient.get(`/api/cases/${id}/`);
+        const response = await apiClient.get(`/api/cases/${id}/`, { signal: controller.signal });
         setCaseData(response.data);
       } catch (error: any) {
+        if (error.name === 'CanceledError') return;
         console.error('Failed to fetch case details:', error);
         setError(error.message || 'Failed to load case details. Please try again.');
       } finally {
@@ -54,14 +55,45 @@ const CaseDetails: React.FC = () => {
     };
 
     if (id) fetchCaseDetails();
+    return () => controller.abort();
   }, [id]);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto" />
-          <p className="text-slate-500 font-medium tracking-wide">Analysing Medical Records...</p>
+      <div className="min-h-screen bg-slate-50 pb-20 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="bg-white border-b border-slate-200">
+          <div className="max-w-5xl mx-auto px-6 py-8 space-y-4">
+            <div className="h-4 bg-slate-200 rounded w-24"></div>
+            <div className="h-10 bg-slate-200 rounded w-2/3"></div>
+            <div className="flex gap-4">
+              <div className="h-4 bg-slate-200 rounded w-32"></div>
+              <div className="h-4 bg-slate-200 rounded w-32"></div>
+            </div>
+          </div>
+        </div>
+        {/* Content Skeleton */}
+        <div className="max-w-5xl mx-auto px-6 mt-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white p-8 rounded-[2rem] border border-slate-100 space-y-4 shadow-sm">
+                <div className="h-6 bg-slate-200 rounded w-1/3"></div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-slate-100 rounded w-full"></div>
+                  <div className="h-4 bg-slate-100 rounded w-5/6"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="space-y-6">
+            <div className="bg-white p-6 rounded-3xl border border-slate-100 space-y-4 shadow-sm">
+              <div className="h-6 bg-slate-200 rounded w-1/2"></div>
+              <div className="space-y-3">
+                <div className="h-4 bg-slate-100 rounded w-full"></div>
+                <div className="h-4 bg-slate-100 rounded w-full"></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -90,17 +122,17 @@ const CaseDetails: React.FC = () => {
 
   const getDifficultyStyles = (difficulty: string) => {
     switch (difficulty) {
-      case 'Easy': return 'bg-green-100 text-green-800 px-3 py-1';
-      case 'Medium': return 'bg-amber-100 text-amber-800 px-3 py-1';
-      case 'Hard': return 'bg-red-100 text-red-800 px-3 py-1';
-      default: return 'bg-slate-100 text-slate-800 px-3 py-1';
+      case 'Easy': return 'bg-green-50 text-green-700 border border-green-200/60 px-3 py-1.5';
+      case 'Medium': return 'bg-amber-50 text-amber-700 border border-amber-200/60 px-3 py-1.5';
+      case 'Hard': return 'bg-red-50 text-red-700 border border-red-200/60 px-3 py-1.5';
+      default: return 'bg-slate-50 text-slate-700 border border-slate-200 px-3 py-1.5';
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       {/* Header Container */}
-      <div className="bg-white border-b border-slate-200">
+      <div className="bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-6 py-8">
           <button 
             onClick={() => navigate('/')}
@@ -131,7 +163,11 @@ const CaseDetails: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Calendar className="w-4 h-4" />
-                  <span>Reported on {new Date(caseData.created_at || Date.now()).toLocaleDateString()}</span>
+                  <span>
+                    {caseData.created_at
+                      ? `Reported on ${new Date(caseData.created_at).toLocaleDateString()}`
+                      : 'Report date unavailable'}
+                  </span>
                 </div>
               </div>
             </div>

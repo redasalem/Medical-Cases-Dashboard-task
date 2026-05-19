@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Stethoscope, Key, Mail, AlertCircle, Loader2 } from 'lucide-react';
+import { Stethoscope, Key, Mail, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 import apiClient from '../utils/apiClient';
 
 /**
@@ -11,6 +11,7 @@ import apiClient from '../utils/apiClient';
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -32,14 +33,18 @@ const Login: React.FC = () => {
       const response = await apiClient.post('/api/auth/login/', { email, password });
       
       // Store the token (Save this exact token string)
-      const token = response.data.token || response.data.access || 'demo-student-token';
+      const token = response.data.token || response.data.access;
+      if (!token) {
+        setError('Login succeeded but no authentication token was received.');
+        return;
+      }
       localStorage.setItem('token', token);
 
       // Redirect to dashboard
       navigate('/');
     } catch (err: any) {
       console.error('Login Error:', err);
-      setError(err.message || 'Invalid email or password. Please try again.');
+      setError(err.detail || err.message || err.non_field_errors?.[0] || 'Invalid email or password. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -85,12 +90,19 @@ const Login: React.FC = () => {
                   <Key className="w-5 h-5" />
                 </div>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                  className="w-full pl-10 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
             </div>
 

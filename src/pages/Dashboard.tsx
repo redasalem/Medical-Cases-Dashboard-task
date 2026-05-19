@@ -5,11 +5,11 @@ import {
   Search, 
   Filter, 
   ChevronRight, 
-  Users, 
   Clock, 
   Brain,
   Stethoscope,
-  LayoutGrid
+  LayoutGrid,
+  AlertCircle
 } from 'lucide-react';
 import apiClient from '../utils/apiClient';
 
@@ -28,27 +28,33 @@ const Dashboard: React.FC = () => {
   const [cases, setCases] = useState<MedicalCase[]>([]);
   const [filteredCases, setFilteredCases] = useState<MedicalCase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState('All');
   const navigate = useNavigate();
 
   // Fetch cases on mount
-  useEffect(() => {
-    const fetchCases = async () => {
-      try {
-        setIsLoading(true);
-        // GET /api/cases/ (proxied)
-        const response = await apiClient.get('/api/cases/');
-        setCases(response.data || []);
-        setFilteredCases(response.data || []);
-      } catch (error) {
-        console.error('Failed to fetch cases:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const fetchCases = async (signal?: AbortSignal) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      // GET /api/cases/ (proxied)
+      const response = await apiClient.get('/api/cases/', { signal });
+      setCases(response.data || []);
+      setFilteredCases(response.data || []);
+    } catch (err: any) {
+      if (err.name === 'CanceledError') return;
+      console.error('Failed to fetch cases:', err);
+      setError('Failed to fetch cases. Please verify your connection.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    fetchCases();
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchCases(controller.signal);
+    return () => controller.abort();
   }, []);
 
   // Filter logic: Search + Difficulty Dropdown
@@ -69,17 +75,17 @@ const Dashboard: React.FC = () => {
 
   const getDifficultyStyles = (difficulty: string) => {
     switch (difficulty) {
-      case 'Easy': return 'bg-green-100 text-green-800 border-green-200';
-      case 'Medium': return 'bg-amber-100 text-amber-800 border-amber-200';
-      case 'Hard': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-slate-100 text-slate-800 border-slate-200';
+      case 'Easy': return 'bg-green-50 text-green-700 border-green-200/60';
+      case 'Medium': return 'bg-amber-50 text-amber-700 border-amber-200/60';
+      case 'Hard': return 'bg-red-50 text-red-700 border-red-200/60';
+      default: return 'bg-slate-50 text-slate-700 border-slate-200';
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Top Navbar */}
-      <nav className="sticky top-0 z-10 bg-white border-b border-slate-200 px-6 py-4">
+      <nav className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-200/80 px-6 py-4 transition-all">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-100">
@@ -140,7 +146,26 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Dashboard Content */}
-        {isLoading ? (
+        {error ? (
+          // Error State
+          <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 bg-white rounded-3xl border border-red-100 shadow-sm max-w-md mx-auto">
+            <div className="p-4 bg-red-50 rounded-full text-red-500">
+              <AlertCircle className="w-12 h-12" />
+            </div>
+            <div className="px-6">
+              <h3 className="text-xl font-semibold text-slate-800">Connection Error</h3>
+              <p className="text-slate-500 max-w-sm mt-2">
+                {error}
+              </p>
+            </div>
+            <button 
+              onClick={() => fetchCases()}
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-md shadow-blue-200 cursor-pointer"
+            >
+              Retry Connection
+            </button>
+          </div>
+        ) : isLoading ? (
           // Skeleton Loading Grid
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -157,7 +182,7 @@ const Dashboard: React.FC = () => {
         ) : filteredCases.length === 0 ? (
           // Empty State
           <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 bg-white rounded-3xl border-2 border-dashed border-slate-200">
-            <div className="p-4 bg-slate-50 rounded-full">
+            <div className="p-5 bg-blue-50/50 text-blue-500 rounded-full ring-8 ring-blue-50/20">
               <Search className="w-12 h-12 text-slate-300" />
             </div>
             <div>

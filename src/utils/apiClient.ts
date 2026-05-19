@@ -40,8 +40,8 @@ apiClient.interceptors.response.use(
 
     // Handle Unauthorized errors (e.g. expired token)
     if (error.response.status === 401) {
-      localStorage.removeItem('student-token');
-      // We could redirect to login here if we had access to history/router
+      localStorage.removeItem('token');
+      window.location.href = '/login';
     }
 
     return Promise.reject(error.response.data || { message: 'Something went wrong. Please try again.' });

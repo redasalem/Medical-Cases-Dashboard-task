@@ -1,73 +1,95 @@
-# React + TypeScript + Vite
+# 🩺 MedCase Hub — Medical Cases Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+MedCase Hub is a premium web application designed for medical students to study, review, and diagnose clinical cases. The application provides an interactive dashboard with advanced filtering options, secure authentication routes, and detailed case analysis sheets.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## ✨ Features
 
-## React Compiler
+- **🔐 Secure Gatekeeping**: Authenticated route guards checking for JWT validation blocks.
+- **📊 Real-time Dashboard**: Fast, responsive layout with live search indexing and difficulty categorizations (Easy, Medium, Hard).
+- **📋 Clinical Sheets**: Complete view of medical cases including clinical presentations, patient history, and confidential diagnoses.
+- **💫 Modern UX/UI**: Frosted glass effects, responsive layouts, responsive SVG medical branding icons, and dynamic interactions.
+- **📡 Server Proxying**: Backend Express API proxy to bypass CORS issues and secure credentials.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🛠️ Technology Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Core**: React 19, TypeScript 6
+- **Routing**: React Router DOM 7
+- **Styling**: Tailwind CSS 4 (using new native imports and theme extensions)
+- **Icons**: Lucide React
+- **Client**: Axios
+- **Server/Proxy**: Express, dotenv
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 📂 Project Architecture
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+├── public/                 # Static assets
+├── src/
+│   ├── components/
+│   │   └── ProtectedRoute.tsx # Route guarding logic
+│   ├── pages/
+│   │   ├── Login.tsx          # Credentials entry and authentication
+│   │   ├── Dashboard.tsx      # Main case listings and filtering
+│   │   └── CaseDetails.tsx    # Single case display & diagnosis reports
+│   ├── utils/
+│   │   └── apiClient.ts       # Axios instance with request/response interceptors
+│   ├── App.tsx                # Routing definitions
+│   ├── main.tsx               # Entrypoint mounting React
+│   └── index.css              # Tailwind global styling configuration
+├── server.ts               # Development proxy server + Static production host
+├── package.json            # Node dependencies and scripts
+└── tsconfig.json           # TypeScript configuration
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🚀 Getting Started
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 📋 Prerequisites
+
+Make sure you have [Node.js](https://nodejs.org/) (v18+) and [pnpm](https://pnpm.io/) installed.
+
+### 📥 Installation
+
+Install dependencies using pnpm:
+
+```bash
+pnpm install
+```
+
+### ⚙️ Environment Configuration
+
+Create a `.env` file in the root directory and add the following:
+
+```env
+VITE_API_BASE_URL=https://testingapi.alrowadit.com
+NODE_ENV=development
+```
+
+### 💻 Running the Application
+
+To run the application locally alongside the development API proxy server:
+
+```bash
+# Compile TypeScript files and start the Express server
+npx tsx server.ts
+```
+
+Alternatively, to run the Vite dev server standalone:
+
+```bash
+pnpm dev
+```
+
+### 🏗️ Building for Production
+
+Compile TypeScript checks and build the production bundle:
+
+```bash
+pnpm build
 ```

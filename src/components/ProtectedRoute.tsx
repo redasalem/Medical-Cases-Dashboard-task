@@ -13,8 +13,10 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const token = localStorage.getItem('token');
+  const isValid = token && token.split('.').length === 3;
 
-  if (!token) {
+  if (!isValid) {
+    if (token) localStorage.removeItem('token');
     // Redirect to login if user is not authenticated
     return <Navigate to="/login" replace />;
   }
