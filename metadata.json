@@ -1,0 +1,8 @@
+{
+  "name": "Medical Cases Dashboard",
+  "description": "A high-end medical SaaS platform for students to manage and review medical cases.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
